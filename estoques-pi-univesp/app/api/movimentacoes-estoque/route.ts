@@ -1,6 +1,12 @@
 import { NextResponse, NextRequest } from "next/server";
 import pool from "@/lib/db";
 
+/*
+  Função que define a rota da API que irá responder a chamadas para registrar e realizar movimentações.
+  O verbo utilizado é o POST, e a rota será {urlHospedagem}/api/movimentacoes-estoque
+  Os dados do movimentação são passados para a API no body da request.
+  Aqui é manipulado tanto a tabela de movimentações quanto a tabela de produtos, atualizando a quantidade disponível em estoque.
+*/
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

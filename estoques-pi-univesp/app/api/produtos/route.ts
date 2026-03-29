@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
+/*
+  Função que define a rota da API que irá responder a chamadas para listar todos os produtos.
+  O verbo utilizado é o GET, e a rota será {urlHospedagem}/api/produtos
+*/
 export async function GET() {
   try {
     const client = await pool.connect();
@@ -16,6 +20,11 @@ export async function GET() {
   }
 }
 
+/*
+  Função que define a rota da API que irá responder a chamadas para criar novos produtos.
+  O verbo utilizado é o POST, e a rota será {urlHospedagem}/api/produtos
+  Os dados do produto são passados para a API no body da request
+*/
 export async function POST(request: Request) {
   try {
     const body = await request.json();

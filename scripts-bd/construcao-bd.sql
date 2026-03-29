@@ -1,5 +1,5 @@
--- user: estoques
--- pass: univesp123!
+-- usuário: estoques
+-- senha: univesp123!
 
 -- =============================================
 -- 1. EXTENSÕES NECESSÁRIAS
@@ -37,7 +37,7 @@ CREATE TABLE usuarios (
 -- Produtos
 CREATE TABLE produtos (
     id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    sku              VARCHAR(50) NOT NULL UNIQUE,           -- código único da variação
+    sku              VARCHAR(50) NOT NULL UNIQUE,           -- código único de mercado do produto
     nome          VARCHAR(200) NOT NULL,
     tipo_bobina   VARCHAR(20) NOT NULL CHECK (tipo_bobina_papel IN ('SIMPLES', 'ESTAMPADA')),
     largura     INTEGER NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE movimentacoes_estoque (
     quantidade        INTEGER NOT NULL CHECK (quantidade != 0),   -- positivo para ENTRADA/AJUSTE+, negativo para SAIDA/AJUSTE-
     motivacao          TEXT,                                     -- "Compra fornecedor X", "Venda pedido #123", "Inventário físico", etc.
     id_fornecedor     UUID REFERENCES fornecedores(id) ON DELETE SET NULL,
-    referencia_externa    VARCHAR(100),                            -- ID do pedido na Shopee, número da nota, etc.
+    referencia_externa    VARCHAR(100),                  -- ID do pedido na Shopee, número da nota, etc.
     id_usuario         UUID REFERENCES usuarios(id) ON DELETE SET NULL,
     data_criacao      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

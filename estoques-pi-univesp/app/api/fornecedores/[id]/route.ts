@@ -1,6 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import pool from "@/lib/db";
 
+/*
+  Função que define a rota da API que irá responder a chamadas para atualizar fornecedores.
+  O verbo utilizado é o PUT, e a rota será {urlHospedagem}/api/fornecedores/{idDoFornecedor}
+  Os dados do fornecedor que serão atualizados são passados para a API no body da request
+*/
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -43,6 +48,10 @@ export async function PUT(
   }
 }
 
+/*
+  Função que define a rota da API que irá responder a chamadas para remover fornecedores.
+  O verbo utilizado é o DELETE, e a rota será {urlHospedagem}/api/fornecedores/{idDoFornecedor}
+*/
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },

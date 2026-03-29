@@ -1,6 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import pool from "@/lib/db";
 
+/*
+  Função que define a rota da API que irá responder a chamadas para atualizar produtos.
+  O verbo utilizado é o PUT, e a rota será {urlHospedagem}/api/produtos/{idDoProduto}
+  Os dados do produto que serão atualizados são passados para a API no body da request
+*/
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -14,13 +19,13 @@ export async function PUT(
 
     const produto = (
       await client.query(
-        `SELECT * FROM fornecedores WHERE id = '${idProduto}'`,
+        `SELECT * FROM produtos WHERE id = '${idProduto}'`,
       )
     ).rows[0];
 
-    const fornecedorAtualizado = (
+    const produtoAtualizado = (
       await client.query(
-        `UPDATE fornecedores SET sku = $1, nome = $2, tipo_bobina = $3, largura = $4, gramatura = $5, url_foto = $6, data_atualizacao = NOW() WHERE id = '${idProduto}' RETURNING *`,
+        `UPDATE produtos SET sku = $1, nome = $2, tipo_bobina = $3, largura = $4, gramatura = $5, url_foto = $6, data_atualizacao = NOW() WHERE id = '${idProduto}' RETURNING *`,
         [
           sku || produto.sku,
           nome || produto.nome,
@@ -34,7 +39,7 @@ export async function PUT(
 
     client.release();
 
-    return NextResponse.json(fornecedorAtualizado);
+    return NextResponse.json(produtoAtualizado);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -44,6 +49,10 @@ export async function PUT(
   }
 }
 
+/*
+  Função que define a rota da API que irá responder a chamadas para remover fornecedores.
+  O verbo utilizado é o DELETE, e a rota será {urlHospedagem}/api/produtos/{idDoProduto}
+*/
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -54,7 +63,7 @@ export async function DELETE(
 
     const produtoRemovido = (
       await client.query(
-        `DELETE FROM fornecedores WHERE id = '${idProduto}' RETURNING *`,
+        `DELETE FROM produtos WHERE id = '${idProduto}' RETURNING *`,
       )
     ).rows[0];
 
