@@ -50,7 +50,7 @@ export async function PUT(
 }
 
 /*
-  Função que define a rota da API que irá responder a chamadas para remover fornecedores.
+  Função que define a rota da API que irá responder a chamadas para remover produtos.
   O verbo utilizado é o DELETE, e a rota será {urlHospedagem}/api/produtos/{idDoProduto}
 */
 export async function DELETE(
