@@ -78,7 +78,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cards.map((card) => (
+          {cards?.map((card) => (
             <Card key={card.title}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -101,7 +101,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-3">
-              {dadosDashboard.ultimasMovimentacoes.map((mov: any) => {
+              {dadosDashboard?.ultimasMovimentacoes?.map((mov: any) => {
                 return (
                   <div
                     key={mov.id}
