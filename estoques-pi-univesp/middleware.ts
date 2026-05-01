@@ -1,56 +1,43 @@
-// import { NextResponse } from "next/server";
-// import type { NextRequest } from "next/server";
-// import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-// export async function middleware(req: NextRequest) {
-//   const token = await getToken({
-//     req,
-//     secret: process.env.NEXTAUTH_SECRET,
-//   });
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ req });
 
-//   const { pathname } = req.nextUrl;
+  const { pathname } = req.nextUrl;
 
-//   // rotas públicas
-//   const publicRoutes = ["/", "/novo-usuario"];
+  const publicRoutes = ["/", "/novo-usuario"];
 
-//   // arquivos estáticos e API do NextAuth
-//   const isPublicFile =
-//     pathname.startsWith("/_next") ||
-//     pathname.startsWith("/api/auth") ||
-//     pathname.startsWith("/api/usuarios") ||
-//     pathname.includes(".");
+  const isPublicFile =
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/usuarios") ||
+    pathname.includes(".");
 
-//   if (isPublicFile) {
-//     return NextResponse.next();
-//   }
+  if (isPublicFile) {
+    return NextResponse.next();
+  }
 
-//   // se não está logado e tenta acessar rota privada
-//   if (!token && !publicRoutes.includes(pathname)) {
-//     return NextResponse.redirect(new URL("/", req.url));
-//   }
+  if (!token && !publicRoutes.includes(pathname)) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
 
-//   // se está logado e tenta acessar login
-//   if (token && pathname === "/") {
-//     return NextResponse.redirect(new URL("/dashboard", req.url));
-//   }
+  if (token && pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
 
-//   return NextResponse.next();
-// }
-
-// export const config = {
-//   matcher: [
-//     /*
-//      * Protege tudo exceto:
-//      * - api/auth (NextAuth)
-//      * - _next (assets internos)
-//      * - arquivos estáticos
-//      */
-//     "/((?!api/auth|_next|favicon.ico).*)",
-//   ],
-// };
-
-import { NextResponse } from 'next/server';
-
-export function middleware() {
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: [
+    /*
+     * Protege tudo exceto:
+     * - api/auth (NextAuth)
+     * - _next (assets internos)
+     * - arquivos estáticos
+     */
+    "/((?!api/auth|_next|favicon.ico).*)",
+  ],
+};
