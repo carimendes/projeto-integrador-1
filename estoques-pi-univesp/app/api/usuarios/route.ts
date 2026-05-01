@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import bcrypt from "bcryptjs";
+import { getAuthSession } from "@/lib/server-session";
 
 /*
   Função que define a rota da API que irá responder a chamadas para listar todos os usuários.
   O verbo utilizado é o GET, e a rota será {urlHospedagem}/api/usuarios
 */
 export async function GET() {
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
   try {
     const client = await pool.connect();
     const { rows } = await client.query("SELECT * FROM usuarios");
@@ -14,7 +22,7 @@ export async function GET() {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Erro de banco de dados" },
+      { error: error },
       { status: 500 },
     );
   }
@@ -33,16 +41,15 @@ export async function POST(request: Request) {
     const client = await pool.connect();
     const { rows } = await client.query(
       "INSERT INTO usuarios(email, nome, senha) VALUES($1, $2, $3) RETURNING *",
-      [email, nome, senha],
+      [email, nome, await bcrypt.hash(senha, 12)],
     );
     client.release();
     return NextResponse.json(rows);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Erro de banco de dados" },
+      { error: error },
       { status: 500 },
     );
   }
 }
-

@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import pool from "@/lib/db";
+import { getAuthSession } from "@/lib/server-session";
 
 /*
   Função que define a rota da API que irá responder a chamadas para atualizar usuários.
@@ -10,19 +11,39 @@ export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
   try {
     const { id: idUsuario } = await context.params;
     const body = await request.json();
-    const { email, nome, senha } = body;
+    const { email, nome, senha, esta_ativo, operacao } = body;
 
     const client = await pool.connect();
 
-    const { rows } = await client.query(
-      `UPDATE usuarios SET email = $1, nome = $2, senha = $3, data_atualizacao = NOW() WHERE id = $4 RETURNING *`,
-      [email, nome, senha, idUsuario],
-    );
+    let returningRows;
+
+    if (operacao === "alterar_status") {
+      const { rows } = await client.query(
+        `UPDATE usuarios SET esta_ativo = $1, data_atualizacao = NOW() WHERE id = $2 RETURNING *`,
+        [esta_ativo, idUsuario],
+      );
+
+      returningRows = rows;
+    } else {
+      const { rows } = await client.query(
+        `UPDATE usuarios SET email = $1, nome = $2, senha = $3, data_atualizacao = NOW() WHERE id = $4 RETURNING *`,
+        [email, nome, senha, idUsuario],
+      );
+
+      returningRows = rows;
+    }
+
     client.release();
-    return NextResponse.json(rows);
+    return NextResponse.json(returningRows);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -41,12 +62,18 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id: idUsuario } = await context.params;
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
   try {
     const client = await pool.connect();
 
     const usuarioRemovido = (
       await client.query(
-        `DELETE FROM usuarios WHERE id = '${idUsuario}' RETURNING *`,
+        `DELETE FROM usuarios WHERE id = '${idUsuario}' RETURNING id, email`,
       )
     ).rows[0];
 

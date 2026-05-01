@@ -13,38 +13,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Package } from "lucide-react";
-import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { cadastrarUsuario } from "@/services/usuarios/usuariosService";
 
-export default function LoginPage() {
+export default function PaginaCadastro() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      senha,
-      redirect: false,
-    });
+    const result = await cadastrarUsuario(nome, email, senha);
 
-    if (result?.error) {
-      toast.error(result.error);
+    if (!result?.ok) {
+      toast.error(result.statusText);
       setLoading(false);
     } else {
-      toast.success("Login realizado com sucesso!");
+      toast.success("Cadastro realizado com sucesso! Fale com um administrador para ativar sua conta.");
       setLoading(false);
-      router.push("/dashboard");
+      router.push("/");
     }
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4 gap-4">
+    <main className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -53,10 +49,21 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl">Sistema de Estoque</CardTitle>
-          <CardDescription>Projeto Integrador I - UNIVESP</CardDescription>
+          <CardDescription>Cadastre-se e solicite sua ativação a um administrador</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <form onSubmit={handleCadastro} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="nome">Nome</Label>
+              <Input
+                id="nome"
+                type="text"
+                placeholder="Seu nome completo"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+              />
+            </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
@@ -79,21 +86,12 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full mt-2 cursor-pointer"
-              disabled={loading}
-            >
-              {loading ? "Entrando..." : "Entrar"}
+            <Button type="submit" className="w-full mt-2" disabled={loading}>
+              {loading ? "Enviando dados..." : "Cadastrar"}
             </Button>
           </form>
         </CardContent>
       </Card>
-      <Link href="/novo-usuario">
-        <Button variant="link" className="cursor-pointer">
-          Cadastre-se agora!
-        </Button>
-      </Link>
     </main>
   );
 }
