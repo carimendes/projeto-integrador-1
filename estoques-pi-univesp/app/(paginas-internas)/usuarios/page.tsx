@@ -51,10 +51,6 @@ export default function EstoquePage() {
     };
   }, []);
 
-  useEffect(() => {
-    console.log("usuarios", usuarios);
-  }, [usuarios]);
-
   const mudarStatusHandler = async (idUsuario: string, esta_ativo: boolean) => {
     const updatedUser: [] = await alterarStatusUsuario(idUsuario, !esta_ativo);
     setUsuarios((curr) => [

@@ -1,11 +1,40 @@
-export const dynamic = "force-dynamic";
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, ArrowUpCircle, ArrowDownCircle, Boxes, ArrowUpDownIcon } from "lucide-react"
-import { listarDadosDashboard } from "@/services/dashboard/dashboardService"
+"use client";
 
-export default async function DashboardPage() {
-  const dadosDashboard = await listarDadosDashboard();
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Package,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Boxes,
+  ArrowUpDownIcon,
+} from "lucide-react";
+import { listarDadosDashboard } from "@/services/dashboard/dashboardService";
+import { useEffect, useState } from "react";
+
+export default function DashboardPage() {
+  const [dadosDashboard, setDadosDashboard] = useState<any>({});
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUsuarios = async () => {
+      try {
+        const data = await listarDadosDashboard();
+        if (isMounted) {
+          setDadosDashboard(data);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar usuários:", error);
+      }
+    };
+
+    fetchUsuarios();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const cards = [
     {
@@ -36,7 +65,7 @@ export default async function DashboardPage() {
       color: "text-orange-600",
       bg: "bg-orange-100",
     },
-  ]
+  ];
 
   return (
     <DashboardLayout>
@@ -83,19 +112,25 @@ export default async function DashboardPage() {
                         className={`p-2 rounded-full ${
                           mov.tipo_movimento === "ENTRADA"
                             ? "bg-green-100"
-                            : (mov.tipo_movimento === "SAIDA" ? "bg-orange-100" : "bg-blue-100")
+                            : mov.tipo_movimento === "SAIDA"
+                              ? "bg-orange-100"
+                              : "bg-blue-100"
                         }`}
                       >
                         {mov.tipo_movimento === "ENTRADA" ? (
                           <ArrowUpCircle className="w-4 h-4 text-green-600" />
                         ) : mov.tipo_movimento === "SAIDA" ? (
                           <ArrowDownCircle className="w-4 h-4 text-orange-600" />
-                        ) : <ArrowUpDownIcon className="w-4 h-4 text-blue-600" />}
+                        ) : (
+                          <ArrowUpDownIcon className="w-4 h-4 text-blue-600" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium">{mov.nome_produto}</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(mov.data_criacao).toLocaleDateString("pt-BR")}
+                          {new Date(mov.data_criacao).toLocaleDateString(
+                            "pt-BR",
+                          )}
                         </p>
                       </div>
                     </div>
@@ -104,19 +139,22 @@ export default async function DashboardPage() {
                         className={`font-semibold ${
                           mov.tipo_movimento === "ENTRADA"
                             ? "text-green-600"
-                            : mov.tipo_movimento === "SAIDA" ? "text-orange-600" : "text-blue-600"
+                            : mov.tipo_movimento === "SAIDA"
+                              ? "text-orange-600"
+                              : "text-blue-600"
                         }`}
                       >
-                        {`${mov.tipo_movimento === "ENTRADA" ? "+" : mov.tipo_movimento === "SAIDA" ? "-" : ""}` + `${mov.quantidade}`}
+                        {`${mov.tipo_movimento === "ENTRADA" ? "+" : mov.tipo_movimento === "SAIDA" ? "-" : ""}` +
+                          `${mov.quantidade}`}
                       </span>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }
