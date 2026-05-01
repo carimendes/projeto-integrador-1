@@ -18,7 +18,6 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/usuarios") ||
-    pathname.startsWith("/api/dashboard") ||
     pathname.includes(".");
 
   if (isPublicFile) {
