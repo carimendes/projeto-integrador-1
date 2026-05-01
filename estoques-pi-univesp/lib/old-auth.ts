@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { sql } from "./db";
+import pool from "./db";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
@@ -17,27 +17,25 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Credenciais inválidas");
         }
 
+        const client = await pool.connect();
+
         try {
-          const [user] = await sql`
-            SELECT id, email, nome, esta_ativo, senha
-            FROM usuarios
-            WHERE email = ${credentials.email}
-          `;
+          const result = await client.query(
+            "SELECT id, email, nome, esta_ativo, senha FROM usuarios WHERE email = $1",
+            [credentials.email],
+          );
+
+          const user = result.rows[0];
 
           if (!user) {
             throw new Error("Usuário não encontrado");
           }
 
           if (!user.esta_ativo) {
-            throw new Error(
-              "Usuário inativo. Entre em contato com um administrador."
-            );
+            throw new Error("Usuário inativo. Entre em contato com um administrador.");
           }
 
-          const isValid = await bcrypt.compare(
-            credentials.senha,
-            user.senha
-          );
+          const isValid = await bcrypt.compare(credentials.senha, user.senha);
 
           if (!isValid) {
             throw new Error("Senha incorreta");
@@ -48,9 +46,8 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             nome: user.nome,
           };
-        } catch (error) {
-          console.error(error);
-          throw new Error("Erro na autenticação");
+        } finally {
+          client.release();
         }
       },
     }),
@@ -75,10 +72,8 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      if (token && session.user) {
+      if (token) {
         session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.nome = token.nome as string;
       }
       return session;
     },
