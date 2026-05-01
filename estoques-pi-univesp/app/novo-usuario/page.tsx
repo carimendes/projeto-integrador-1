@@ -45,7 +45,7 @@ export default function PaginaCadastro() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4 gap-4">
       <Link href="/">
-        <Button variant="outline">
+        <Button variant="outline" className="cursor-pointer">
           <ArrowBigLeftIcon />
           Voltar
         </Button>
@@ -97,7 +97,7 @@ export default function PaginaCadastro() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full mt-2" disabled={loading}>
+            <Button type="submit" className="w-full mt-2 cursor-pointer" disabled={loading}>
               {loading ? "Enviando dados..." : "Cadastrar"}
             </Button>
           </form>
