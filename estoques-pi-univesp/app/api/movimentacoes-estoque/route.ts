@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN produtos p ON me.id_produto = p.id 
       LEFT JOIN fornecedores f ON me.id_fornecedor = f.id 
       LEFT JOIN usuarios u ON me.id_usuario = u.id
+      ORDER BY me.data_criacao DESC
     `;
 
     return NextResponse.json(movimentacoes);
@@ -64,69 +65,74 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 🔥 TRANSAÇÃO (ESSENCIAL)
-    const resultado = await sql.transaction(async (tx) => {
-      // 1. Buscar produto atual
-      const [produto] = await tx`
-        SELECT id, quantidade_estoque
-        FROM produtos
-        WHERE id = ${id_produto}
-      `;
+    const qtd = Number(quantidade);
 
-      if (!produto) {
-        throw new Error("Produto não encontrado");
-      }
+    if (!qtd || qtd === 0) {
+      return NextResponse.json(
+        { error: "Quantidade inválida" },
+        { status: 400 }
+      );
+    }
 
-      const estoqueAtual = Number(produto.quantidade_estoque);
-      const qtd = Number(quantidade);
+    // =========================
+    // ATUALIZAÇÃO ATÔMICA
+    // =========================
 
-      let novoEstoque = estoqueAtual;
+    let updateResult;
 
-      if (tipo_movimento === "ENTRADA") {
-        novoEstoque = estoqueAtual + qtd;
-      } else if (tipo_movimento === "SAIDA") {
-        if (estoqueAtual < qtd) {
-          throw new Error("Estoque insuficiente");
-        }
-        novoEstoque = estoqueAtual - qtd;
-      } else if (tipo_movimento === "AJUSTE") {
-        novoEstoque = estoqueAtual + qtd;
-      }
-
-      // 2. Atualizar estoque
-      await tx`
+    if (tipo_movimento === "ENTRADA" || tipo_movimento === "AJUSTE") {
+      // soma direto (seguro)
+      updateResult = await sql`
         UPDATE produtos
-        SET quantidade_estoque = ${novoEstoque}
+        SET quantidade_estoque = quantidade_estoque + ${qtd}
         WHERE id = ${id_produto}
+        RETURNING *
       `;
-
-      // 3. Registrar movimentação
-      const [movimentacao] = await tx`
-        INSERT INTO movimentacoes_estoque (
-          tipo_movimento,
-          id_produto,
-          quantidade,
-          motivacao,
-          id_fornecedor,
-          referencia_externa,
-          id_usuario
-        )
-        VALUES (
-          ${tipo_movimento},
-          ${id_produto},
-          ${qtd},
-          ${motivacao ?? null},
-          ${id_fornecedor},
-          ${referencia_externa ?? null},
-          ${session?.user?.id}
-        )
+    } else {
+      // SAÍDA com proteção contra estoque negativo
+      updateResult = await sql`
+        UPDATE produtos
+        SET quantidade_estoque = quantidade_estoque - ${qtd}
+        WHERE id = ${id_produto}
+        AND quantidade_estoque >= ${qtd}
         RETURNING *
       `;
 
-      return movimentacao;
-    });
+      if (updateResult.length === 0) {
+        return NextResponse.json(
+          { error: "Estoque insuficiente ou produto inexistente" },
+          { status: 400 }
+        );
+      }
+    }
 
-    return NextResponse.json(resultado);
+    // =========================
+    // REGISTRA MOVIMENTAÇÃO
+    // =========================
+
+    const [movimentacao] = await sql`
+      INSERT INTO movimentacoes_estoque (
+        tipo_movimento,
+        id_produto,
+        quantidade,
+        motivacao,
+        id_fornecedor,
+        referencia_externa,
+        id_usuario
+      )
+      VALUES (
+        ${tipo_movimento},
+        ${id_produto},
+        ${qtd},
+        ${motivacao ?? null},
+        ${id_fornecedor},
+        ${referencia_externa ?? null},
+        ${session.user.id}
+      )
+      RETURNING *
+    `;
+
+    return NextResponse.json(movimentacao);
   } catch (error: any) {
     console.error(error);
 
