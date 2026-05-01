@@ -1,5 +1,29 @@
 import { NextResponse, NextRequest } from "next/server";
 import pool from "@/lib/db";
+import { getAuthSession } from "@/lib/server-session";
+
+export async function GET(request: NextRequest) {
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  try {
+    const client = await pool.connect();
+    const { rows } = await client.query(
+      "SELECT me.*, p.nome as nome_produto, f.nome as nome_fornecedor, u.nome as nome_usuario FROM movimentacoes_estoque me LEFT JOIN produtos p ON me.id_produto = p.id LEFT JOIN fornecedores f ON me.id_fornecedor = f.id LEFT JOIN usuarios u ON me.id_usuario = u.id",
+    );
+    client.release();
+    return NextResponse.json(rows);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Erro de banco de dados" },
+      { status: 500 },
+    );
+  }
+}
 
 /*
   Função que define a rota da API que irá responder a chamadas para registrar e realizar movimentações.
@@ -8,6 +32,12 @@ import pool from "@/lib/db";
   Aqui é manipulado tanto a tabela de movimentações quanto a tabela de produtos, atualizando a quantidade disponível em estoque.
 */
 export async function POST(request: NextRequest) {
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const {
@@ -15,7 +45,7 @@ export async function POST(request: NextRequest) {
       id_produto,
       quantidade,
       motivacao,
-      id_fornecedor,
+      id_fornecedor = null,
       referencia_externa,
     } = body;
 
@@ -36,14 +66,15 @@ export async function POST(request: NextRequest) {
 
     const registroMovimento = (
       await client.query(
-        "INSERT INTO movimentacoes_estoque(tipo_movimento, id_produto, quantidade, motivacao, id_fornecedor, referencia_externa, id_usuario) VALUES($1, $2, $3, $4, $5, $6, '2faf6ea6-0a32-44c1-9c18-dcfb00f588c4') RETURNING *",
+        "INSERT INTO movimentacoes_estoque(tipo_movimento, id_produto, quantidade, motivacao, id_fornecedor, referencia_externa, id_usuario) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *",
         [
           tipo_movimento,
           id_produto,
           quantidade,
-          motivacao,
-          id_fornecedor,
-          referencia_externa,
+          motivacao || null,
+          id_fornecedor || null,
+          referencia_externa || null,
+          session?.user?.id
         ],
       )
     ).rows[0];

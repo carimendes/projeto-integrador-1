@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import pool from "@/lib/db";
+import { getAuthSession } from "@/lib/server-session";
 
 /*
   Função que define a rota da API que irá responder a chamadas para atualizar produtos.
@@ -11,6 +12,13 @@ export async function PUT(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id: idProduto } = await context.params;
+
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { sku, nome, tipo_bobina, largura, gramatura, url_foto } = body;
@@ -18,9 +26,7 @@ export async function PUT(
     const client = await pool.connect();
 
     const produto = (
-      await client.query(
-        `SELECT * FROM produtos WHERE id = '${idProduto}'`,
-      )
+      await client.query(`SELECT * FROM produtos WHERE id = '${idProduto}'`)
     ).rows[0];
 
     const produtoAtualizado = (
@@ -58,6 +64,13 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id: idProduto } = await context.params;
+
+  const session = await getAuthSession();
+
+  if (!session) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
   try {
     const client = await pool.connect();
 
