@@ -91,7 +91,7 @@ export default function LoginPage() {
       </Card>
       <Link href="/novo-usuario">
         <Button variant="link" className="cursor-pointer">
-          Cadastre-se agora!
+          Ainda não tem conta? Cadastre-se agora
         </Button>
       </Link>
     </main>

@@ -12,9 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Package } from "lucide-react";
+import { Package, ArrowBigLeftIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cadastrarUsuario } from "@/services/usuarios/usuariosService";
+import Link from "next/link";
 
 export default function PaginaCadastro() {
   const router = useRouter();
@@ -33,14 +34,22 @@ export default function PaginaCadastro() {
       toast.error(result.statusText);
       setLoading(false);
     } else {
-      toast.success("Cadastro realizado com sucesso! Fale com um administrador para ativar sua conta.");
+      toast.success(
+        "Cadastro realizado com sucesso! Fale com um administrador para ativar sua conta.",
+      );
       setLoading(false);
       router.push("/");
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4 gap-4">
+      <Link href="/">
+        <Button variant="outline">
+          <ArrowBigLeftIcon />
+          Voltar
+        </Button>
+      </Link>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -49,7 +58,9 @@ export default function PaginaCadastro() {
             </div>
           </div>
           <CardTitle className="text-2xl">Sistema de Estoque</CardTitle>
-          <CardDescription>Cadastre-se e solicite sua ativação a um administrador</CardDescription>
+          <CardDescription>
+            Cadastre-se e solicite sua ativação a um administrador
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCadastro} className="flex flex-col gap-4">
