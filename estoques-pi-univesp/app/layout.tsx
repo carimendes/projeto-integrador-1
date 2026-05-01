@@ -1,26 +1,46 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'sonner'
+import './globals.css'
+
+const _geist = Geist({ subsets: ["latin"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Controle de Estoque",
-  description: "Aplicação feita para a disciplina de Projeto Integrador I da UNIVESP",
-};
+  title: 'Projeto Integrado I - UNIVESP | Sistema de Estoque',
+  description: 'Sistema de gerenciamento de estoque de bobinas de papel',
+  icons: {
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icon-dark-32x32.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
+  },
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="pt-br"
-      className={`h-full antialiased`}
-    >
-      <body className="">{children}</body>
+    <html lang="pt-BR" className="bg-background">
+      <body className="font-sans antialiased min-h-screen">
+        {children}
+        <Toaster richColors position="top-right" />
+        {process.env.NODE_ENV === 'production' && <Analytics />}
+      </body>
     </html>
-  );
+  )
 }
