@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/api/produtos/old-route.ts.old", "lib/old-auth.ts.old", "app/api/fornecedores/old-route.ts.old", "app/api/fornecedores/[id]/old-route.ts.old", "app/api/dashboard/old-route.ts.old", "app/api/usuarios/[id]/old-route.ts.old"  ],
   "exclude": ["node_modules"]
 }
