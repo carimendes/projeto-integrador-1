@@ -4,7 +4,7 @@
 */
 import { neon } from "@neondatabase/serverless";
 
-export const sql = neon(process.env.DATABASE_URL!);
+export const sql = neon(process.env.DB_DATABASE_URL!);
 // import { Pool } from 'pg';
 
 // const pool = new Pool({
