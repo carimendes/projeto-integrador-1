@@ -25,7 +25,7 @@ export default function DashboardPage() {
           setDadosDashboard(data);
         }
       } catch (error) {
-        console.error("Erro ao carregar usuários:", error);
+        console.error("Erro ao carregar dados:", error);
       }
     };
 

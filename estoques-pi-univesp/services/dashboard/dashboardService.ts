@@ -1,5 +1,5 @@
 export async function listarDadosDashboard() {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard`);
+    const response = await fetch('/api/dashboard');
 
     return response.json();
 }
