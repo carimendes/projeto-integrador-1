@@ -171,7 +171,7 @@ export default function MovimentacoesPage() {
                         <SelectValue placeholder="Selecione o produto" />
                       </SelectTrigger>
                       <SelectContent>
-                        {produtosDisponiveis.map((produto) => (
+                        {produtosDisponiveis.map((produto: any) => (
                           <SelectItem
                             key={produto.id}
                             value={produto.id.toString()}
@@ -195,7 +195,7 @@ export default function MovimentacoesPage() {
                         <SelectValue placeholder="Selecione o fornecedor" />
                       </SelectTrigger>
                       <SelectContent>
-                        {fornecedoresDisponiveis.map((fornecedor) => (
+                        {fornecedoresDisponiveis.map((fornecedor: any) => (
                           <SelectItem
                             key={fornecedor.id}
                             value={fornecedor.id.toString()}
@@ -316,7 +316,7 @@ export default function MovimentacoesPage() {
                     </TableHeader>
                     <TableBody>
                       {movimentacoes
-                        .sort((a, b) => {
+                        .sort((a: any, b: any) => {
                           const dateA = Date.parse(
                             a.data_criacao.replace(" ", "T"),
                           );
@@ -325,7 +325,7 @@ export default function MovimentacoesPage() {
                           );
                           return dateB - dateA;
                         })
-                        .map((mov) => {
+                        .map((mov: any) => {
                           return (
                             <TableRow key={mov.id}>
                               <TableCell>{mov?.nome_produto}</TableCell>

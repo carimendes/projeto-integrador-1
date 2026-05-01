@@ -58,15 +58,15 @@ export default function EstoquePage() {
   const mudarStatusHandler = async (idUsuario: string, esta_ativo: boolean) => {
     const updatedUser: [] = await alterarStatusUsuario(idUsuario, !esta_ativo);
     setUsuarios((curr) => [
-      ...curr.filter((u) => u.id != idUsuario),
+      ...curr.filter((u: any) => u.id != idUsuario),
       ...updatedUser,
     ]);
   };
 
   const removerUsuarioHandler = async (idUsuario: string) => {
-    const removedUser: Array<object> = await removerUsuario(idUsuario);
+    const removedUser = await removerUsuario(idUsuario);
     console.log(removedUser);
-    setUsuarios((curr) => curr.filter((u) => u.id != removedUser?.id));
+    setUsuarios((curr) => curr.filter((u: any) => u.id != removedUser?.id));
   };
 
   return (
@@ -108,8 +108,8 @@ export default function EstoquePage() {
                     </TableRow>
                   ) : (
                     usuarios
-                      .sort((a, b) => a.nome.localeCompare(b.nome))
-                      .map((usuario) => (
+                      .sort((a: any, b: any) => a.nome.localeCompare(b.nome))
+                      .map((usuario: any) => (
                         <TableRow key={usuario.id}>
                           <TableCell className="w-25 text-center">
                             {identificaStatusUsuario(usuario.esta_ativo)}

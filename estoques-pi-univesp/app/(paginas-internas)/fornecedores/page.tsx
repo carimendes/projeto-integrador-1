@@ -45,8 +45,8 @@ export default function EstoquePage() {
 
   const removerFornecedorHandler = async (idFornecedor: string) => {
     const fornecedorRemovido = await removerFornecedor(idFornecedor);
-    setFornecedores((curr) =>
-      curr.filter((f) => f.id != fornecedorRemovido.id),
+    setFornecedores((curr: any) =>
+      curr.filter((f: any) => f.id != fornecedorRemovido.id),
     );
   };
 
@@ -90,8 +90,8 @@ export default function EstoquePage() {
                     </TableRow>
                   ) : (
                     fornecedores
-                      .sort((a, b) => a.nome.localeCompare(b.nome))
-                      .map((fornecedor) => (
+                      .sort((a: any, b: any) => a.nome.localeCompare(b.nome))
+                      .map((fornecedor: any) => (
                         <TableRow key={fornecedor.id}>
                           <TableCell>{fornecedor.nome}</TableCell>
                           <TableCell>{fornecedor.contato}</TableCell>

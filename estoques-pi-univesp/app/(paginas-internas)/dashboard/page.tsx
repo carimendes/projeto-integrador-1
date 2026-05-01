@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, ArrowUpCircle, ArrowDownCircle, Boxes, ArrowUpDownIcon } from "lucide-react"
@@ -71,7 +72,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-3">
-              {dadosDashboard.ultimasMovimentacoes.map((mov) => {
+              {dadosDashboard.ultimasMovimentacoes.map((mov: any) => {
                 return (
                   <div
                     key={mov.id}

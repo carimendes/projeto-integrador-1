@@ -3,7 +3,7 @@ export async function listarMovimentacoes() {
     return await resposta.json();
 }
 
-export async function lancarMovimentacao(dadosMovimentacao) {
+export async function lancarMovimentacao(dadosMovimentacao: any) {
     const resposta = await fetch('/api/movimentacoes-estoque', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},

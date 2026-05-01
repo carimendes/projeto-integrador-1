@@ -76,17 +76,17 @@ export default function EstoquePage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    produtos.map((produto) => (
-                      <TableRow key={produto.id}>
+                    produtos.map((produto: any) => (
+                      <TableRow key={produto?.id}>
                         <TableCell className="font-medium">
-                          {produto.sku}
+                          {produto?.sku}
                         </TableCell>
-                        <TableCell>{produto.nome}</TableCell>
-                        <TableCell>{produto.tipo_bobina}</TableCell>
-                        <TableCell>{produto.largura}</TableCell>
-                        <TableCell>{produto.gramatura}</TableCell>
+                        <TableCell>{produto?.nome}</TableCell>
+                        <TableCell>{produto?.tipo_bobina}</TableCell>
+                        <TableCell>{produto?.largura}</TableCell>
+                        <TableCell>{produto?.gramatura}</TableCell>
                         <TableCell className="font-semibold">
-                          {produto.quantidade_estoque}
+                          {produto?.quantidade_estoque}
                         </TableCell>
                       </TableRow>
                     ))
