@@ -1,11 +1,10 @@
 import { NextResponse, NextRequest } from "next/server";
-import pool from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getAuthSession } from "@/lib/server-session";
+import bcrypt from "bcryptjs";
 
 /*
-  Função que define a rota da API que irá responder a chamadas para atualizar usuários.
-  O verbo utilizado é o PUT, e a rota será {urlHospedagem}/api/usuarios/{idDoUsuario}
-  Os dados do usuário que serão atualizados são passados para a API no body da request
+  PUT - Atualizar usuário
 */
 export async function PUT(
   request: NextRequest,
@@ -14,77 +13,86 @@ export async function PUT(
   const session = await getAuthSession();
 
   if (!session) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   try {
     const { id: idUsuario } = await context.params;
     const body = await request.json();
+
     const { email, nome, senha, esta_ativo, operacao } = body;
 
-    const client = await pool.connect();
-
-    let returningRows;
+    let usuarioAtualizado;
 
     if (operacao === "alterar_status") {
-      const { rows } = await client.query(
-        `UPDATE usuarios SET esta_ativo = $1, data_atualizacao = NOW() WHERE id = $2 RETURNING *`,
-        [esta_ativo, idUsuario],
-      );
+      const [result] = await sql`
+        UPDATE usuarios
+        SET esta_ativo = ${esta_ativo}, data_atualizacao = NOW()
+        WHERE id = ${idUsuario}
+        RETURNING id, email, nome, esta_ativo
+      `;
 
-      returningRows = rows;
+      usuarioAtualizado = result;
     } else {
-      const { rows } = await client.query(
-        `UPDATE usuarios SET email = $1, nome = $2, senha = $3, data_atualizacao = NOW() WHERE id = $4 RETURNING *`,
-        [email, nome, senha, idUsuario],
-      );
+      let senhaHash = senha;
 
-      returningRows = rows;
+      // só faz hash se veio senha nova
+      if (senha) {
+        senhaHash = await bcrypt.hash(senha, 12);
+      }
+
+      const [result] = await sql`
+        UPDATE usuarios
+        SET 
+          email = ${email},
+          nome = ${nome},
+          senha = ${senhaHash},
+          data_atualizacao = NOW()
+        WHERE id = ${idUsuario}
+        RETURNING id, email, nome, esta_ativo
+      `;
+
+      usuarioAtualizado = result;
     }
 
-    client.release();
-    return NextResponse.json(returningRows);
+    return NextResponse.json(usuarioAtualizado);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Erro de banco de dados" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 /*
-  Função que define a rota da API que irá responder a chamadas para remover usuários.
-  O verbo utilizado é o DELETE, e a rota será {urlHospedagem}/api/usuarios/{idDoUsuario}
+  DELETE - Remover usuário
 */
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  const { id: idUsuario } = await context.params;
   const session = await getAuthSession();
 
   if (!session) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   try {
-    const client = await pool.connect();
+    const { id: idUsuario } = await context.params;
 
-    const usuarioRemovido = (
-      await client.query(
-        `DELETE FROM usuarios WHERE id = '${idUsuario}' RETURNING id, email`,
-      )
-    ).rows[0];
-
-    client.release();
+    const [usuarioRemovido] = await sql`
+      DELETE FROM usuarios
+      WHERE id = ${idUsuario}
+      RETURNING id, email
+    `;
 
     return NextResponse.json(usuarioRemovido);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Erro de banco de dados" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

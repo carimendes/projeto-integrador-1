@@ -1,60 +1,79 @@
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getAuthSession } from "@/lib/server-session";
 
 /*
-  Função que define a rota da API que irá responder a chamadas para listar todos os fornecedores.
-  O verbo utilizado é o GET, e a rota será {urlHospedagem}/api/fornecedores
+  GET - Listar fornecedores
 */
 export async function GET() {
   const session = await getAuthSession();
 
   if (!session) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   try {
-    const client = await pool.connect();
-    const { rows } = await client.query("SELECT * FROM fornecedores");
-    client.release();
-    return NextResponse.json(rows);
+    const fornecedores = await sql`
+      SELECT * FROM fornecedores
+    `;
+
+    return NextResponse.json(fornecedores);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Erro de banco de dados" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 /*
-  Função que define a rota da API que irá responder a chamadas para criar novos fornecedores.
-  O verbo utilizado é o POST, e a rota será {urlHospedagem}/api/fornecedores
-  Os dados do fornecedor são passados para a API no body da request
+  POST - Criar fornecedor
 */
 export async function POST(request: Request) {
   const session = await getAuthSession();
 
   if (!session) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   try {
     const body = await request.json();
+
     const { nome, contato, email, telefone, notas } = body;
 
-    const client = await pool.connect();
-    const { rows } = await client.query(
-      "INSERT INTO fornecedores(nome, contato, email, telefone, notas) VALUES($1, $2, $3, $4, $5) RETURNING *",
-      [nome, contato, email, telefone, notas],
-    );
-    client.release();
-    return NextResponse.json(rows);
+    // validação básica
+    if (!nome) {
+      return NextResponse.json(
+        { error: "Nome é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    const [novoFornecedor] = await sql`
+      INSERT INTO fornecedores (
+        nome,
+        contato,
+        email,
+        telefone,
+        notas
+      )
+      VALUES (
+        ${nome},
+        ${contato ?? null},
+        ${email ?? null},
+        ${telefone ?? null},
+        ${notas ?? null}
+      )
+      RETURNING *
+    `;
+
+    return NextResponse.json(novoFornecedor);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Erro de banco de dados" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

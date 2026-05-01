@@ -1,11 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
-import pool from "@/lib/db";
+import { sql } from "@/lib/db";
 import { getAuthSession } from "@/lib/server-session";
 
 /*
-  Função que define a rota da API que irá responder a chamadas para atualizar produtos.
-  O verbo utilizado é o PUT, e a rota será {urlHospedagem}/api/produtos/{idDoProduto}
-  Os dados do produto que serão atualizados são passados para a API no body da request
+  PUT - Atualizar produto
 */
 export async function PUT(
   request: NextRequest,
@@ -16,48 +14,47 @@ export async function PUT(
   const session = await getAuthSession();
 
   if (!session) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   try {
     const body = await request.json();
-    const { sku, nome, tipo_bobina, largura, gramatura, url_foto } = body;
 
-    const client = await pool.connect();
+    const {
+      sku,
+      nome,
+      tipo_bobina,
+      largura,
+      gramatura,
+      url_foto,
+    } = body;
 
-    const produto = (
-      await client.query(`SELECT * FROM produtos WHERE id = '${idProduto}'`)
-    ).rows[0];
-
-    const produtoAtualizado = (
-      await client.query(
-        `UPDATE produtos SET sku = $1, nome = $2, tipo_bobina = $3, largura = $4, gramatura = $5, url_foto = $6, data_atualizacao = NOW() WHERE id = '${idProduto}' RETURNING *`,
-        [
-          sku || produto.sku,
-          nome || produto.nome,
-          tipo_bobina || produto.tipo_bobina,
-          largura || produto.largura,
-          gramatura || produto.gramatura,
-          url_foto || produto.url_foto,
-        ],
-      )
-    ).rows[0];
-
-    client.release();
+    const [produtoAtualizado] = await sql`
+      UPDATE produtos
+      SET
+        sku = COALESCE(${sku}, sku),
+        nome = COALESCE(${nome}, nome),
+        tipo_bobina = COALESCE(${tipo_bobina}, tipo_bobina),
+        largura = COALESCE(${largura}, largura),
+        gramatura = COALESCE(${gramatura}, gramatura),
+        url_foto = COALESCE(${url_foto}, url_foto),
+        data_atualizacao = NOW()
+      WHERE id = ${idProduto}
+      RETURNING *
+    `;
 
     return NextResponse.json(produtoAtualizado);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Erro de banco de dados" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 /*
-  Função que define a rota da API que irá responder a chamadas para remover produtos.
-  O verbo utilizado é o DELETE, e a rota será {urlHospedagem}/api/produtos/{idDoProduto}
+  DELETE - Remover produto
 */
 export async function DELETE(
   request: NextRequest,
@@ -68,26 +65,22 @@ export async function DELETE(
   const session = await getAuthSession();
 
   if (!session) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   try {
-    const client = await pool.connect();
-
-    const produtoRemovido = (
-      await client.query(
-        `DELETE FROM produtos WHERE id = '${idProduto}' RETURNING *`,
-      )
-    ).rows[0];
-
-    client.release();
+    const [produtoRemovido] = await sql`
+      DELETE FROM produtos
+      WHERE id = ${idProduto}
+      RETURNING *
+    `;
 
     return NextResponse.json(produtoRemovido);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Erro de banco de dados" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
