@@ -53,10 +53,8 @@ export default function EstoquePage() {
 
   const mudarStatusHandler = async (idUsuario: string, esta_ativo: boolean) => {
     const updatedUser: [] = await alterarStatusUsuario(idUsuario, !esta_ativo);
-    setUsuarios((curr) => [
-      ...curr.filter((u: any) => u.id != idUsuario),
-      ...updatedUser,
-    ]);
+    const data = await getTodosUsuarios();
+    setUsuarios(data);
   };
 
   const removerUsuarioHandler = async (idUsuario: string) => {
