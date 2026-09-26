@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { nome, contato, email, telefone, notas } = body;
+    const { cnpj, nome, contato, email, telefone, notas } = body;
 
     // validação básica
     if (!nome) {
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
 
     const [novoFornecedor] = await sql`
       INSERT INTO fornecedores (
+        cnpj,
         nome,
         contato,
         email,
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
         notas
       )
       VALUES (
+        ${cnpj},
         ${nome},
         ${contato ?? null},
         ${email ?? null},
