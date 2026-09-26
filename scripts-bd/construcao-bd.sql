@@ -13,6 +13,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Fornecedores
 CREATE TABLE fornecedores (
     id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cnpj              VARCHAR(14) NOT NULL UNIQUE,
     nome              VARCHAR(150) NOT NULL,
     contato           VARCHAR(100),
     email             VARCHAR(150),
