@@ -38,6 +38,13 @@ import {
 import { formatarData } from "@/lib/formatador-data";
 import { listarFornecedores } from "@/services/fornecedores/fornecedoresService";
 import { listarProdutos } from "@/services/produtos/produtosService";
+import {
+  MensagemErroCampo,
+  focarCampo,
+  lerErroResposta,
+  propsCampo,
+  type ErroFormulario,
+} from "@/components/acessibilidade/mensagem-erro-campo";
 
 export default function MovimentacoesPage() {
   const [loading, setLoading] = useState(false);
@@ -52,6 +59,7 @@ export default function MovimentacoesPage() {
     tipo_movimento: "",
     quantidade: "",
   });
+  const [erro, setErro] = useState<ErroFormulario | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -97,23 +105,30 @@ export default function MovimentacoesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErro(null);
 
-    // Simula o registro da movimentação
     const respostaMovimentacao = await lancarMovimentacao(formData);
+    setLoading(false);
 
-    if (respostaMovimentacao.ok) {
-      const tipoTexto =
-        formData.tipo_movimento === "ENTRADA"
-          ? "Entrada"
-          : formData.tipo_movimento === "SAIDA"
-            ? "Saída"
-            : "Ajuste";
-      toast.success(`${tipoTexto} registrada com sucesso!`);
-    } else {
-      toast.error("Não foi possível lançar a movimentação.");
+    if (!respostaMovimentacao.ok) {
+      // Mantém o que foi digitado e mostra o erro ao lado do campo
+      const erroApi = await lerErroResposta(
+        respostaMovimentacao,
+        "Não foi possível registrar a movimentação.",
+      );
+      setErro(erroApi);
+      if (erroApi.campo) focarCampo(erroApi.campo);
+      else toast.error(erroApi.mensagem);
+      return;
     }
 
-    setLoading(false);
+    const tipoTexto =
+      formData.tipo_movimento === "ENTRADA"
+        ? "Entrada"
+        : formData.tipo_movimento === "SAIDA"
+          ? "Saída"
+          : "Ajuste";
+    toast.success(`${tipoTexto} registrada com sucesso!`);
 
     // Reseta o formulário
     setFormData({
@@ -128,7 +143,10 @@ export default function MovimentacoesPage() {
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (erro?.campo === field) setErro(null);
   };
+
+  const ehAjuste = formData.tipo_movimento === "AJUSTE";
 
   return (
     <DashboardLayout>
@@ -159,7 +177,7 @@ export default function MovimentacoesPage() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="produto">Produto</Label>
+                    <Label htmlFor="id_produto">Produto</Label>
                     <Select
                       value={formData.id_produto}
                       onValueChange={(value) =>
@@ -167,7 +185,7 @@ export default function MovimentacoesPage() {
                       }
                       required
                     >
-                      <SelectTrigger id="produto" className="w-100">
+                      <SelectTrigger id="id_produto" className="w-100" {...propsCampo("id_produto", erro)}>
                         <SelectValue placeholder="Selecione o produto" />
                       </SelectTrigger>
                       <SelectContent>
@@ -181,17 +199,18 @@ export default function MovimentacoesPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <MensagemErroCampo campo="id_produto" erro={erro} />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="fornecedor">Fornecedor</Label>
+                    <Label htmlFor="id_fornecedor">Fornecedor (opcional)</Label>
                     <Select
                       value={formData.id_fornecedor}
                       onValueChange={(value) =>
                         handleChange("id_fornecedor", value)
                       }
                     >
-                      <SelectTrigger id="fornecedor" className="w-100">
+                      <SelectTrigger id="id_fornecedor" className="w-100">
                         <SelectValue placeholder="Selecione o fornecedor" />
                       </SelectTrigger>
                       <SelectContent>
@@ -208,7 +227,7 @@ export default function MovimentacoesPage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="tipo">Tipo de movimentação</Label>
+                    <Label htmlFor="tipo_movimento">Tipo de movimentação</Label>
                     <Select
                       value={formData.tipo_movimento}
                       onValueChange={(value) =>
@@ -216,7 +235,7 @@ export default function MovimentacoesPage() {
                       }
                       required
                     >
-                      <SelectTrigger id="tipo" className="w-100">
+                      <SelectTrigger id="tipo_movimento" className="w-100" {...propsCampo("tipo_movimento", erro)}>
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -240,21 +259,36 @@ export default function MovimentacoesPage() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                    <MensagemErroCampo campo="tipo_movimento" erro={erro} />
                   </div>
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="quantidade">Quantidade</Label>
                     <Input
                       id="quantidade"
-                      type="tel"
+                      type="number"
+                      inputMode="numeric"
+                      step="1"
                       placeholder="Digite a quantidade"
                       value={formData.quantidade}
                       onChange={(e) =>
                         handleChange("quantidade", e.target.value)
                       }
-                      min="1"
+                      min={ehAjuste ? undefined : "1"}
                       required
+                      aria-invalid={erro?.campo === "quantidade" || undefined}
+                      aria-describedby={
+                        erro?.campo === "quantidade"
+                          ? "quantidade-erro quantidade-ajuda"
+                          : "quantidade-ajuda"
+                      }
                     />
+                    <p id="quantidade-ajuda" className="text-sm text-muted-foreground">
+                      {ehAjuste
+                        ? "No ajuste, use número positivo para aumentar o estoque e negativo para diminuir."
+                        : "Número inteiro maior que zero."}
+                    </p>
+                    <MensagemErroCampo campo="quantidade" erro={erro} />
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -263,12 +297,14 @@ export default function MovimentacoesPage() {
                     </Label>
                     <Input
                       id="referencia_externa"
+                      {...propsCampo("referencia_externa", erro)}
                       placeholder="Referência da origem da movimentação, ex: código do pedido da Shopee"
                       value={formData.referencia_externa}
                       onChange={(e) =>
                         handleChange("referencia_externa", e.target.value)
                       }
                     />
+                    <MensagemErroCampo campo="referencia_externa" erro={erro} />
                   </div>
 
                   <div className="flex flex-col gap-2">

@@ -1,6 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { getAuthSession } from "@/lib/server-session";
+import { validarMovimentacao } from "@/lib/validacoes";
+import {
+  MENSAGENS,
+  codigoErroBanco,
+  erroServidor,
+  erroValidacao,
+  naoAutenticado,
+} from "@/lib/respostas-api";
 
 /*
   GET - Listar movimentações
@@ -38,78 +46,60 @@ export async function GET(request: NextRequest) {
 
 /*
   POST - Registrar movimentação + atualizar estoque
+  Validação com mensagens em linguagem simples (seção 3.8 — Acessibilidade).
 */
 export async function POST(request: NextRequest) {
   const session = await getAuthSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    return naoAutenticado();
   }
 
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return erroValidacao(MENSAGENS.corpoInvalido);
+  }
 
-    const {
-      tipo_movimento,
-      id_produto,
-      quantidade,
-      motivacao,
-      id_fornecedor = null,
-      referencia_externa,
-    } = body;
+  const validacao = validarMovimentacao(body);
+  if (!validacao.ok) {
+    return erroValidacao(validacao.mensagem, validacao.campo);
+  }
+  const dados = validacao.dados;
 
-    if (!["ENTRADA", "SAIDA", "AJUSTE"].includes(tipo_movimento)) {
-      return NextResponse.json(
-        { error: "Operação inválida" },
-        { status: 400 }
-      );
-    }
+  // ENTRADA soma, SAÍDA subtrai, AJUSTE soma o valor com sinal (negativo diminui).
+  const variacao = dados.tipo_movimento === "SAIDA" ? -dados.quantidade : dados.quantidade;
 
-    const qtd = Number(quantidade);
-
-    if (!qtd || qtd === 0) {
-      return NextResponse.json(
-        { error: "Quantidade inválida" },
-        { status: 400 }
-      );
-    }
-
+  try {
     // =========================
     // ATUALIZAÇÃO ATÔMICA
+    // (a condição impede que o estoque fique negativo)
     // =========================
+    const updateResult = await sql`
+      UPDATE produtos
+      SET quantidade_estoque = quantidade_estoque + ${variacao}
+      WHERE id = ${dados.id_produto}
+      AND quantidade_estoque + ${variacao} >= 0
+      RETURNING quantidade_estoque
+    `;
 
-    let updateResult;
-
-    if (tipo_movimento === "ENTRADA" || tipo_movimento === "AJUSTE") {
-      // soma direto (seguro)
-      updateResult = await sql`
-        UPDATE produtos
-        SET quantidade_estoque = quantidade_estoque + ${qtd}
-        WHERE id = ${id_produto}
-        RETURNING *
+    if (updateResult.length === 0) {
+      const [produto] = await sql`
+        SELECT quantidade_estoque FROM produtos WHERE id = ${dados.id_produto}
       `;
-    } else {
-      // SAÍDA com proteção contra estoque negativo
-      updateResult = await sql`
-        UPDATE produtos
-        SET quantidade_estoque = quantidade_estoque - ${qtd}
-        WHERE id = ${id_produto}
-        AND quantidade_estoque >= ${qtd}
-        RETURNING *
-      `;
-
-      if (updateResult.length === 0) {
-        return NextResponse.json(
-          { error: "Estoque insuficiente ou produto inexistente" },
-          { status: 400 }
-        );
+      if (!produto) {
+        return erroValidacao("Produto não encontrado. Recarregue a página e selecione de novo.", "id_produto");
       }
+      return erroValidacao(
+        `Estoque insuficiente: há apenas ${produto.quantidade_estoque} unidade(s) deste produto.`,
+        "quantidade",
+      );
     }
 
     // =========================
     // REGISTRA MOVIMENTAÇÃO
     // =========================
-
     const [movimentacao] = await sql`
       INSERT INTO movimentacoes_estoque (
         tipo_movimento,
@@ -121,24 +111,24 @@ export async function POST(request: NextRequest) {
         id_usuario
       )
       VALUES (
-        ${tipo_movimento},
-        ${id_produto},
-        ${qtd},
-        ${motivacao ?? null},
-        ${id_fornecedor},
-        ${referencia_externa ?? null},
+        ${dados.tipo_movimento},
+        ${dados.id_produto},
+        ${dados.quantidade},
+        ${dados.motivacao},
+        ${dados.id_fornecedor},
+        ${dados.referencia_externa},
         ${session.user.id}
       )
       RETURNING *
     `;
 
     return NextResponse.json(movimentacao);
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
-
-    return NextResponse.json(
-      { error: error.message || "Erro de banco de dados" },
-      { status: 500 }
-    );
+    if (codigoErroBanco(error) === "22P02") {
+      // identificador em formato inválido
+      return erroValidacao("Produto ou fornecedor inválido. Recarregue a página e tente de novo.");
+    }
+    return erroServidor("Não foi possível registrar a movimentação. Tente novamente em alguns instantes.");
   }
 }

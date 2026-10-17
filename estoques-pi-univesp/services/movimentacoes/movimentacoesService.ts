@@ -3,7 +3,16 @@ export async function listarMovimentacoes() {
     return await resposta.json();
 }
 
-export async function lancarMovimentacao(dadosMovimentacao: any) {
+export interface DadosNovaMovimentacao {
+    id_produto: string;
+    id_fornecedor: string;
+    motivacao: string;
+    referencia_externa: string;
+    tipo_movimento: string;
+    quantidade: string;
+}
+
+export async function lancarMovimentacao(dadosMovimentacao: DadosNovaMovimentacao) {
     const resposta = await fetch('/api/movimentacoes-estoque', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
