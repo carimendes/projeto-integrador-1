@@ -235,16 +235,20 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@asamuzakjp/css-color@7.1.7':
-    resolution: {integrity: sha512-Q7ioeear07HwixdIitIn9KS1LZi97CEDFCSjPNm9v+y8KNbsu9q4Lrd4zUQW4faED+E7qxvfeVnbNRW46wFKuw==}
+  '@asamuzakjp/css-color@7.1.5':
+    resolution: {integrity: sha512-jCpAvj8apa7SKHZYogk0rbXB3Kb0hLFrpkWF+Ap+vBA5rirItnpv9NKyAyEuDuFizvl0qwnj6JWR70RGJ0rOlw==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@asamuzakjp/dom-selector@10.0.4':
-    resolution: {integrity: sha512-A6f1nKy99I6tyoK82U6kBHvQQZmdHmTmPzJYPY/0eaOW0r8/qPmEOwjGHs+hL/vCgOwQTupu4LT1XtXNUuDruA==}
+  '@asamuzakjp/dom-selector@10.0.3':
+    resolution: {integrity: sha512-3+777rEPsOOjoy5/sRmIzHnoRDaLpm3XWY2dmWn/N7f/XwDG0bcpnFaKL3X9FYJUbNwLmpcJC1bUYexJRxsFlw==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/code-frame@7.29.7':
+    resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/compat-data@7.29.0':
@@ -285,6 +289,10 @@ packages:
     resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/helper-validator-identifier@7.29.7':
+    resolution: {integrity: sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/helper-validator-option@7.27.1':
     resolution: {integrity: sha512-YvjJow9FxbhFFKDSuFnVCe2WxXk1zWc22fFePVNEaWJEu8IrZVlda6N0uHwzZrUM1il7NC9Mlp4MaJYbYd9JSg==}
     engines: {node: '>=6.9.0'}
@@ -297,6 +305,10 @@ packages:
     resolution: {integrity: sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
+
+  '@babel/runtime@7.29.10':
+    resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.29.2':
     resolution: {integrity: sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==}
@@ -3892,7 +3904,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@asamuzakjp/css-color@7.1.7':
+  '@asamuzakjp/css-color@7.1.5':
     dependencies:
       '@csstools/css-calc': 3.4.3(@csstools/css-parser-algorithms@4.0.2(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
       '@csstools/css-color-parser': 4.2.6(@csstools/css-parser-algorithms@4.0.2(@csstools/css-tokenizer@4.0.2))(@csstools/css-tokenizer@4.0.2)
@@ -3900,7 +3912,7 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.2
       lru-cache: 11.5.3
 
-  '@asamuzakjp/dom-selector@10.0.4':
+  '@asamuzakjp/dom-selector@10.0.3':
     dependencies:
       bidi-js: 1.1.0
       css-tree: 3.2.1
@@ -3910,6 +3922,12 @@ snapshots:
   '@babel/code-frame@7.29.0':
     dependencies:
       '@babel/helper-validator-identifier': 7.28.5
+      js-tokens: 4.0.0
+      picocolors: 1.1.1
+
+  '@babel/code-frame@7.29.7':
+    dependencies:
+      '@babel/helper-validator-identifier': 7.29.7
       js-tokens: 4.0.0
       picocolors: 1.1.1
 
@@ -3973,6 +3991,8 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.28.5': {}
 
+  '@babel/helper-validator-identifier@7.29.7': {}
+
   '@babel/helper-validator-option@7.27.1': {}
 
   '@babel/helpers@7.29.2':
@@ -3983,6 +4003,8 @@ snapshots:
   '@babel/parser@7.29.2':
     dependencies:
       '@babel/types': 7.29.0
+
+  '@babel/runtime@7.29.10': {}
 
   '@babel/runtime@7.29.2': {}
 
@@ -5134,8 +5156,8 @@ snapshots:
 
   '@testing-library/dom@10.4.2':
     dependencies:
-      '@babel/code-frame': 7.29.0
-      '@babel/runtime': 7.29.2
+      '@babel/code-frame': 7.29.7
+      '@babel/runtime': 7.29.10
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
@@ -6436,8 +6458,8 @@ snapshots:
 
   jsdom@30.1.3:
     dependencies:
-      '@asamuzakjp/css-color': 7.1.7
-      '@asamuzakjp/dom-selector': 10.0.4
+      '@asamuzakjp/css-color': 7.1.5
+      '@asamuzakjp/dom-selector': 10.0.3
       '@bramus/specificity': 2.4.3
       '@csstools/css-syntax-patches-for-csstree': 1.1.15(css-tree@3.2.1)
       '@exodus/bytes': 1.16.0
