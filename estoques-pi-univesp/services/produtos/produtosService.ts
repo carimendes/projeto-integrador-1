@@ -10,6 +10,7 @@ export async function criarProduto(dadosProduto: {
   largura: string;
   gramatura: string;
   quantidade_estoque: string;
+  estoque_minimo?: string;
 }) {
   const resposta = await fetch("/api/produtos", {
     method: "POST",

@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import './globals.css'
+import {
+  PreferenciasProvider,
+  SCRIPT_APLICAR_ANTES,
+} from '@/components/acessibilidade/preferencias-provider'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -35,9 +39,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className="bg-background">
+    // suppressHydrationWarning: o script abaixo coloca as preferências de
+    // acessibilidade no <html> antes do React carregar.
+    <html lang="pt-BR" className="bg-background" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_APLICAR_ANTES }} />
+      </head>
       <body className="font-sans antialiased min-h-screen">
-        {children}
+        <PreferenciasProvider>{children}</PreferenciasProvider>
         <Toaster richColors position="top-right" />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

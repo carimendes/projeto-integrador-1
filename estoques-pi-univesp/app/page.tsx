@@ -16,6 +16,7 @@ import { Package } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { ControlesAcessibilidade } from "@/components/acessibilidade/controles-acessibilidade";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,7 +51,10 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4 gap-4">
+    <main className="relative min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4 gap-4">
+      <div className="absolute right-4 top-4">
+        <ControlesAcessibilidade />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -114,7 +118,7 @@ export default function LoginPage() {
             onClick={handleGoogleLogin}
             disabled={loading || googleLoading}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { getAuthSession } from "@/lib/server-session";
+import { validarEstoqueMinimoOpcional } from "@/lib/validacoes";
+import { erroValidacao } from "@/lib/respostas-api";
 
 /*
   PUT - Atualizar produto
@@ -29,6 +31,12 @@ export async function PUT(
       url_foto,
     } = body;
 
+    const minimo = validarEstoqueMinimoOpcional(body.estoque_minimo);
+    if (!minimo.ok) {
+      return erroValidacao(minimo.mensagem, minimo.campo);
+    }
+    const estoqueMinimo = minimo.dados ?? null;
+
     const [produtoAtualizado] = await sql`
       UPDATE produtos
       SET
@@ -38,6 +46,7 @@ export async function PUT(
         largura = COALESCE(${largura}, largura),
         gramatura = COALESCE(${gramatura}, gramatura),
         url_foto = COALESCE(${url_foto}, url_foto),
+        estoque_minimo = COALESCE(${estoqueMinimo}, estoque_minimo),
         data_atualizacao = NOW()
       WHERE id = ${idProduto}
       RETURNING *

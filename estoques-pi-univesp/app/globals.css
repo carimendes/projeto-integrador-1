@@ -123,3 +123,106 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* =====================================================================
+   Gráficos do módulo de Análise de Dados (seção 3.7)
+   Cores validadas para daltonismo (protan/deutan/tritan) e contraste.
+   Entradas = azul, saídas = laranja, estoque atual = violeta.
+   ===================================================================== */
+:root {
+  --serie-entradas: #2a78d6;
+  --serie-saidas: #eb6834;
+  --serie-estoque: #6250d6;
+  --foco: #1c5cab;
+  --alerta-fundo: #fff7e6;
+  --alerta-borda: #b45309;
+  --alerta-texto: #7c2d12;
+}
+
+.dark {
+  --serie-entradas: #3987e5;
+  --serie-saidas: #d95926;
+  --serie-estoque: #9085e9;
+  --foco: #86b6ef;
+  --alerta-fundo: #3a2a0a;
+  --alerta-borda: #f59e0b;
+  --alerta-texto: #fde68a;
+}
+
+/* =====================================================================
+   Acessibilidade (seção 3.8)
+   ===================================================================== */
+
+/* Indicação de foco sempre visível para quem navega pelo teclado.
+   Fica fora de @layer de propósito: assim vence o "outline-none" dos
+   componentes e vale para qualquer elemento focável. */
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+
+/* Tamanho da fonte escolhido pelo usuário. Como o Tailwind usa "rem",
+   todo o layout (textos, espaçamentos, ícones) acompanha a escala. */
+html[data-fonte="grande"] {
+  font-size: 112.5%;
+}
+html[data-fonte="muito_grande"] {
+  font-size: 125%;
+}
+
+/* Modo de alto contraste: texto preto sobre branco, bordas pretas,
+   cores de status e dos gráficos mais escuras e links sublinhados. */
+html[data-contraste="alto"] {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #f2f2f2;
+  --muted-foreground: #1a1a1a;
+  --accent: #e6e6e6;
+  --accent-foreground: #000000;
+  --destructive: #b00020;
+  --border: #000000;
+  --input: #000000;
+  --ring: #000000;
+  --foco: #000000;
+
+  --serie-entradas: #1c5cab;
+  --serie-saidas: #c2410c;
+  --serie-estoque: #4a3aa7;
+  --alerta-fundo: #ffffff;
+  --alerta-borda: #000000;
+  --alerta-texto: #000000;
+
+  /* Cores de status usadas nas telas (Tailwind v4 lê estas variáveis) */
+  --color-green-600: #006b1f;
+  --color-emerald-600: #006b45;
+  --color-orange-600: #9a3412;
+  --color-orange-700: #7c2d12;
+  --color-blue-600: #1e3a8a;
+  --color-blue-700: #172554;
+}
+
+html[data-contraste="alto"] a {
+  text-decoration: underline;
+}
+
+html[data-contraste="alto"] :focus-visible {
+  outline-width: 4px;
+}
+
+/* Respeita quem pediu menos animação no sistema operacional. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
